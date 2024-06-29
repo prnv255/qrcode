@@ -9,10 +9,11 @@
     <style>
         body {
             background-color: #f8f9fa;
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         .navbar {
             margin-bottom: 20px;
+            background-color: #343a40;
         }
         .container {
             max-width: 800px;
@@ -30,6 +31,12 @@
             position: fixed;
             width: 100%;
             bottom: 0;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .btn {
+            min-width: 150px;
         }
     </style>
 </head>
@@ -56,8 +63,8 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-     <!-- Custom script for popup message -->
-     <script>
+    <!-- Custom script for popup message -->
+    <script>
         // Function to show signup success message
         function showSignupSuccessMessage() {
             alert("Signup successful!");
