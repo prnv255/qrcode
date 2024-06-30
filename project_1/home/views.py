@@ -5,6 +5,8 @@ from django.contrib.auth.decorators import login_required
 import qrcode
 from io import BytesIO
 from base64 import b64encode
+from .models import Receipt 
+from .forms import *
 
 def index(request):
     return render(request, 'index.html')
@@ -71,3 +73,36 @@ def landing(request):
 def logout_view(request):
     logout(request)
     return redirect('index')
+@login_required
+def landing_view(request):
+    user = request.user
+    receipts = Receipt.objects.filter(user=user)
+
+    if request.method == 'POST':
+        form = ReceiptForm(request.POST)
+        if form.is_valid():
+            receipt = form.save(commit=False)
+            receipt.user = user
+            receipt.save()
+
+            if 'generate_qr' in request.POST:
+                return redirect('qr_code', receipt_id=receipt.id)
+            else:
+                return redirect('landing')
+
+    else:
+        form = ReceiptForm()
+
+    return render(request, 'landing.html', {'receipts': receipts, 'form': form})
+@login_required
+def qr_code_view(request, receipt_id):
+    receipt = Receipt.objects.get(id=receipt_id)
+    data = f"Name: {receipt.patient_name}\nDate of Birth: {receipt.date_of_birth}\nImmuneel Patient ID: {receipt.immuneel_patient_id}\nHospital Patient ID: {receipt.hospital_patient_id}"
+    qr = qrcode.QRCode(version=1, box_size=10, border=5)
+    qr.add_data(data)
+    qr.make(fit=True)
+    img = qr.make_image(fill='black', back_color='white')
+    buffer = BytesIO()
+    img.save(buffer)
+    buffer.seek(0)
+    return HttpResponse(buffer, content_type='image/png')

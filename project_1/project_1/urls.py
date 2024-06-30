@@ -1,12 +1,12 @@
-from django.contrib import admin
+# urls.py
 from django.urls import path
-from home import views
 
+from home import views
 urlpatterns = [
-    path('admin/', admin.site.urls),
     path('', views.index, name='index'),
     path('signup/', views.signup_view, name='signup'),
     path('login/', views.login_view, name='login'),
-    path('landing/', views.landing, name='landing'),
     path('logout/', views.logout_view, name='logout'),
+    path('landing/', views.landing_view, name='landing'),
+    path('qr_code/<int:receipt_id>/', views.qr_code_view, name='qr_code'),
 ]
