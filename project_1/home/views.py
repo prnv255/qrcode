@@ -66,10 +66,7 @@ def landing(request):
 
     return render(request, 'landing.html', {'patient_details': patient_details, 'qr_code': qr_code})
 
-@login_required
-def profile(request):
-    user = request.user
-    return render(request, 'profile.html', {'user': user})
+
 
 def logout_view(request):
     logout(request)

@@ -8,5 +8,5 @@ urlpatterns = [
     path('landing/', landing, name='landing'),
     path('logout/', logout_view, name='logout'),
     path('qr_code/', qr_code_view, name='qr_code'),
-    path('profile/', profile, name='profile'),
+   
 ]
