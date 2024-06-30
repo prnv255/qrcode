@@ -1,25 +1,23 @@
+from django.shortcuts import render, redirect
+from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from .forms import CustomUserCreationForm
+from django.contrib.auth.decorators import login_required
 import qrcode
 from io import BytesIO
-from django.http import HttpResponse
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
-from django.contrib.auth import login, authenticate
+from base64 import b64encode
 
-from django.contrib.auth import login, authenticate
-from django.shortcuts import render, redirect
-from .forms import CustomUserCreationForm
-from django.contrib.auth.forms import AuthenticationForm
+def index(request):
+    return render(request, 'index.html')
 
 def signup_view(request):
     if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST)
+        form = UserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            return redirect('login')  # Redirect to login page after signup
+            login(request, user)
+            return redirect('login')
     else:
-        form = CustomUserCreationForm()
+        form = UserCreationForm()
     return render(request, 'signup.html', {'form': form})
 
 def login_view(request):
@@ -28,57 +26,51 @@ def login_view(request):
         if form.is_valid():
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password')
-            generate_qr = request.POST.get('generate_qr', False)
             user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
-                if generate_qr:
-                    return redirect('qr_code')
-                else:
-                    return redirect('landing_page')
+                return redirect('landing')
     else:
         form = AuthenticationForm()
     return render(request, 'login.html', {'form': form})
 
 @login_required
-def qr_code_view(request):
-    user = request.user
-    data = f'Name: {user.username}\nAge: {user.age}\nGender: {user.gender}\nAdditional Info: {user.additional_info}'
-    qr = qrcode.QRCode(version=1, box_size=10, border=5)
-    qr.add_data(data)
-    qr.make(fit=True)
-    img = qr.make_image(fill='black', back_color='white')
-    buffer = BytesIO()
-    img.save(buffer)
-    buffer.seek(0)
-    return HttpResponse(buffer, content_type='image/png')
+def landing(request):
+    patient_details = None
+    qr_code = None
+
+    if request.method == 'POST':
+        patient_name = request.POST.get('patient_name')
+        dob = request.POST.get('dob')
+        immuneel_id = request.POST.get('immuneel_id')
+        hospital_id = request.POST.get('hospital_id')
+        generate_qr = request.POST.get('generate_qr')
+
+        patient_details = {
+            'patient_name': patient_name,
+            'dob': dob,
+            'immuneel_id': immuneel_id,
+            'hospital_id': hospital_id
+        }
+
+        if generate_qr:
+            data = f'Name: {patient_name}\nDOB: {dob}\nImmuneel Patient ID: {immuneel_id}\nHospital Patient ID: {hospital_id}'
+            qr = qrcode.QRCode(version=1, box_size=10, border=5)
+            qr.add_data(data)
+            qr.make(fit=True)
+            img = qr.make_image(fill='black', back_color='white')
+            buffer = BytesIO()
+            img.save(buffer)
+            buffer.seek(0)
+            qr_code = buffer.getvalue()
+
+    return render(request, 'landing.html', {'patient_details': patient_details, 'qr_code': qr_code})
 
 @login_required
 def profile(request):
     user = request.user
-    user_details = {
-        'username': user.username,
-        'email': user.email,
-        'first_name': user.first_name,
-        'last_name': user.last_name,
-    }
-    qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_L,
-        box_size=1,
-        border=2,
-    )
-    qr.add_data(str(user_details))
-    qr.make(fit=True)
-    qr_img = qr.make_image(fill_color="black", back_color="white")
-    buffer = BytesIO()
-    qr_img.save(buffer)
-    qr_img_binary = buffer.getvalue()
-    return render(request, 'home/profile.html', {'qr_code': qr_img_binary})
+    return render(request, 'profile.html', {'user': user})
 
-def index(request):
-    return render(request, 'index.html')
-
-@login_required
-def landing_page_view(request):
-    return render(request, 'landing_page.html')
+def logout_view(request):
+    logout(request)
+    return redirect('index')
