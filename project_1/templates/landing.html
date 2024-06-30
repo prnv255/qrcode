@@ -31,29 +31,7 @@ Landing Page
     </div>
     <button type="submit" class="btn btn-primary">Submit</button>
 </form>
-<div class="container">
-    <h2>Available Receipts</h2>
-    <ul class="list-group mb-4">
-        {% for receipt in receipts %}
-            <li class="list-group-item">
-                <strong>{{ receipt.patient_name }}</strong> ({{ receipt.immuneel_patient_id }}) - {{ receipt.date_of_birth }}
-            </li>
-        {% empty %}
-            <li class="list-group-item">No receipts available.</li>
-        {% endfor %}
-    </ul>
 
-    <h2>Create a New Receipt</h2>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <div class="form-group form-check">
-            <input type="checkbox" class="form-check-input" id="generate_qr" name="generate_qr">
-            <label class="form-check-label" for="generate_qr">Generate QR Code</label>
-        </div>
-        <button type="submit" class="btn btn-primary">Submit</button>
-    </form>
-</div>
 {% if patient_details %}
     <div class="mt-4">
         <h3>Patient Details</h3>
